@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>A message is waiting for you</title>
+<meta name="description" content="Type your name to begin." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; min-height: 100%;
+    background: #2a1d14;
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    color: #f6efe4;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .bg {
+    position: fixed; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 42%, rgba(226,178,106,0.25), transparent 70%),
+      linear-gradient(175deg, #3d2a1c 0%, #2f2016 45%, #1f150e 100%);
+  }
+
+  .stage {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: clamp(14px, 3.2vh, 26px);
+    padding: 6vh 22px;
+  }
+
+  .eyebrow {
+    font-size: clamp(15px, 4.1vw, 19px);
+    font-style: italic;
+    color: #e2b26a;
+    text-align: center;
+  }
+
+  .headline {
+    font-size: clamp(25px, 7vw, 38px);
+    font-weight: 600;
+    line-height: 1.22;
+    text-align: center;
+    max-width: 16ch;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.45);
+  }
+
+  .subline {
+    font-size: clamp(14.5px, 3.9vw, 17px);
+    line-height: 1.5;
+    text-align: center;
+    max-width: 32ch;
+    color: rgba(246,239,228,0.82);
+  }
+
+  .ask {
+    width: min(340px, 88vw);
+    display: flex; flex-direction: column;
+    gap: 11px;
+    margin-top: 4px;
+  }
+
+  .ask label {
+    font-size: clamp(14.5px, 3.9vw, 17px);
+    text-align: center;
+  }
+
+  .ask input {
+    width: 100%;
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 17px;                 /* 16px+ stops iOS Safari from zooming on focus */
+    text-align: center;
+    color: #2a1d14;
+    background: #f6efe4;
+    border: 1px solid rgba(226,178,106,0.55);
+    border-radius: 3px;
+    outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease;
+  }
+  .ask input::placeholder { color: rgba(42,29,20,0.42); }
+  .ask input:focus {
+    border-color: #e2b26a;
+    box-shadow: 0 0 0 3px rgba(226,178,106,0.2);
+  }
+
+  .ask button {
+    width: 100%;
+    padding: 15px 18px;
+    font-family: inherit;
+    font-size: clamp(15px, 4.1vw, 17px);
+    font-weight: 600;
+    letter-spacing: .02em;
+    color: #2a1d14;
+    background: linear-gradient(180deg, #e8c07a 0%, #bb8a45 100%);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: transform .14s ease, filter .2s ease;
+  }
+  .ask button:hover  { filter: brightness(1.06); }
+  .ask button:active { transform: translateY(1px); }
+  .ask button:disabled { opacity: .7; cursor: default; }
+
+  .veil {
+    position: fixed; inset: 0; z-index: 40;
+    display: flex; align-items: center; justify-content: center;
+    background: #efeae2;             /* must match the chat background */
+    opacity: 0; visibility: hidden;
+    transition: opacity .45s ease;
+  }
+  .veil.up { opacity: 1; visibility: visible; }
+  .veil span { font-size: clamp(15px, 4vw, 18px); font-style: italic; color: #7c6444; }
+</style>
+</head>
+
+<body>
+  <div class="bg"></div>
+
+  <main class="stage" id="stage">
+    <p class="eyebrow" id="eyebrow">A message was written</p>
+    <h1 class="headline">It is waiting for you</h1>
+    <p class="subline" id="subline">Type your name to open it.</p>
+
+    <form class="ask" id="ask" autocomplete="off" novalidate>
+      <label for="visitor">What name should I write on it?</label>
+      <input id="visitor" type="text" name="visitor_given_name"
+             placeholder="Type your name" autocapitalize="words"
+             spellcheck="false" maxlength="40" />
+      <button type="submit" id="open">Open my message</button>
+    </form>
+  </main>
+
+  <div class="veil" id="veil"><span>Opening…</span></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ─── EDIT HERE ───────────────────────────────────────────────── */
+  var VARIANT     = 'v1';            // free label to separate campaigns
+  var HANDOFF_MS  = 1600;            // transition screen duration
+  /* ────────────────────────────────────────────────────────────── */
+
+  var TRACKED = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','utm_id'];
+
+  var stage   = document.getElementById('stage');
+  var form    = document.getElementById('ask');
+  var input   = document.getElementById('visitor');
+  var button  = document.getElementById('open');
+  var eyebrow = document.getElementById('eyebrow');
+  var subline = document.getElementById('subline');
+  var veil    = document.getElementById('veil');
+
+  function readCookie(name) {
+    var hit = document.cookie.match('(?:^|; )' + name.replace(/([.*+?^${}()|[\]\\])/g,'\\$1') + '=([^;]*)');
+    return hit ? decodeURIComponent(hit[1]) : '';
+  }
+
+  // Facebook uses "." as the separator in _fbp/_fbc, and some in-app
+  // browsers mangle it in the query string. Swap it for "--"; chat.html undoes it.
+  function shield(v) { return v ? v.replace(/\./g, '--') : ''; }
+
+  function facebookClickId() {
+    var existing = readCookie('_fbc');
+    if (existing) return existing;
+    var clickId = new URLSearchParams(location.search).get('fbclid');
+    return clickId ? 'fb.1.' + Date.now() + '.' + clickId : '';
+  }
+
+  function chatUrl(name) {
+    var url = new URL('chat.html', location.href);
+    url.searchParams.set('firstName', name);
+    url.searchParams.set('variant', VARIANT);
+
+    var fbp = shield(readCookie('_fbp'));
+    var fbc = shield(facebookClickId());
+    if (fbp) url.searchParams.set('fbp', fbp);
+    if (fbc) url.searchParams.set('fbc', fbc);
+
+    var landed = new URLSearchParams(location.search);
+    TRACKED.forEach(function (k) {
+      var v = landed.get(k);
+      if (v) url.searchParams.set(k, v);
+    });
+
+    return url.toString();
+  }
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    var name = input.value.trim().replace(/\s+/g, ' ');
+    if (!name) {
+      subline.textContent = 'Type your name first.';
+      input.focus();
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = 'Opening…';
+    eyebrow.textContent = 'For ' + name;
+    subline.textContent = 'Done.';
+
+    try { sessionStorage.setItem('first_name', name); } catch (err) {}
+
+    var destination = chatUrl(name);
+    setTimeout(function () { veil.classList.add('up'); }, Math.max(0, HANDOFF_MS - 600));
+    setTimeout(function () { location.href = destination; }, HANDOFF_MS);
+  });
+})();
+</script>
+</body>
+</html>
