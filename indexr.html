@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+
+<title>A letter is waiting for you</title>
+<meta name="description" content="It was written this morning. Your name is already on it." />
+
+<meta property="og:type" content="website" />
+<meta property="og:title" content="A letter is waiting for you" />
+<meta property="og:description" content="It was written this morning. Your name is already on it." />
+<meta property="og:image" content="/letter-card.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="A letter is waiting for you" />
+<meta name="twitter:description" content="It was written this morning. Your name is already on it." />
+<meta name="twitter:image" content="/letter-card.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+<link rel="icon" type="image/png" href="/seal.png" />
+
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: #2a1d14;
+    overflow: hidden;
+    font-family: 'Lora', Georgia, 'Times New Roman', serif;
+    color: #f6efe4;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* ── Desk: candlelit wood, warm and close. Deliberately the opposite
+     of a wide night sky — this scene is small, indoor, intimate. ── */
+  .desk {
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 70% 55% at 50% 42%, rgba(226,178,106,0.28), transparent 70%),
+      linear-gradient(175deg, #3d2a1c 0%, #2f2016 45%, #1f150e 100%);
+    z-index: 0;
+  }
+
+  /* Candle light that breathes. Two layers at different speeds so the
+     flicker never lands on an obvious loop. */
+  .candle {
+    position: fixed; left: 50%; top: 44%;
+    width: min(760px, 150vw); height: min(760px, 150vw);
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(240,196,120,0.30) 0%, rgba(190,132,66,0.14) 38%, transparent 68%);
+    animation: breathe 6.5s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .candle.inner {
+    width: min(360px, 80vw); height: min(360px, 80vw);
+    background: radial-gradient(circle, rgba(255,222,164,0.34) 0%, transparent 62%);
+    animation: breathe 4.1s ease-in-out infinite reverse;
+  }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.82; transform: translate(-50%, -50%) scale(1); }
+    50%      { opacity: 1;    transform: translate(-50%, -50%) scale(1.06); }
+  }
+
+  /* Dust motes: they drift sideways and sink, like dust in a shaft of
+     window light. Slow on purpose — the page should feel still. */
+  .mote {
+    position: fixed;
+    background: rgba(244,214,166,0.75);
+    border-radius: 50%;
+    filter: blur(0.4px);
+    pointer-events: none;
+    z-index: 2;
+    animation-name: sink;
+    animation-timing-function: linear;
+    animation-iteration-count: 1;
+  }
+  @keyframes sink {
+    0%   { opacity: 0; transform: translate(0, -8vh); }
+    12%  { opacity: 0.9; }
+    88%  { opacity: 0.5; }
+    100% { opacity: 0; transform: translate(9vw, 104vh); }
+  }
+
+  /* ── Stage ── */
+  .stage {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: clamp(14px, 3.2vh, 26px);
+    padding: 5vh 22px;
+    z-index: 3;
+    transform-origin: 50% 46%;
+    transition: transform 1.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease 0.85s;
+  }
+  .stage.parting { transform: scale(3.4); opacity: 0; }
+
+  .letter { width: min(300px, 62vw); filter: drop-shadow(0 18px 34px rgba(0,0,0,0.5)); }
+  .letter .seal-group { transform-origin: 150px 128px; animation: warm 5.2s ease-in-out infinite; }
+  @keyframes warm {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.035); }
+  }
+
+  .eyebrow {
+    font-size: clamp(15px, 4.1vw, 19px);
+    font-style: italic;
+    letter-spacing: 0.012em;
+    color: #e2b26a;
+    text-align: center;
+  }
+
+  .headline {
+    font-size: clamp(25px, 7vw, 38px);
+    font-weight: 600;
+    line-height: 1.22;
+    text-align: center;
+    max-width: 15ch;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.45);
+  }
+
+  .subline {
+    font-size: clamp(14.5px, 3.9vw, 17px);
+    line-height: 1.5;
+    text-align: center;
+    max-width: 30ch;
+    color: rgba(246,239,228,0.82);
+  }
+
+  /* Trust line sits above the form so it is read before the ask, and
+     never gets pushed under the fold on short phones. */
+  .trust {
+    font-size: clamp(12.5px, 3.3vw, 14px);
+    text-align: center;
+    color: #c9a879;
+    max-width: 32ch;
+    line-height: 1.45;
+  }
+  .trust b { color: #eec98a; font-weight: 600; }
+
+  /* ── Ask ── */
+  .ask {
+    width: min(340px, 88vw);
+    display: flex; flex-direction: column;
+    align-items: stretch; gap: 11px;
+  }
+
+  .ask label {
+    font-size: clamp(14.5px, 3.9vw, 17px);
+    text-align: center;
+    color: #f6efe4;
+  }
+
+  .ask input {
+    width: 100%;
+    padding: 14px 16px;
+    font-family: inherit;
+    font-size: 17px;                 /* 16px+ stops iOS Safari zooming on focus */
+    text-align: center;
+    color: #2a1d14;
+    background: #f6efe4;
+    border: 1px solid rgba(226,178,106,0.55);
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .ask input::placeholder { color: rgba(42,29,20,0.42); }
+  .ask input:focus {
+    border-color: #e2b26a;
+    box-shadow: 0 0 0 3px rgba(226,178,106,0.2);
+  }
+
+  .ask button {
+    width: 100%;
+    padding: 15px 18px;
+    font-family: inherit;
+    font-size: clamp(15px, 4.1vw, 17px);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #2a1d14;
+    background: linear-gradient(180deg, #e8c07a 0%, #bb8a45 100%);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: transform 0.14s ease, filter 0.2s ease;
+  }
+  .ask button:hover  { filter: brightness(1.06); }
+  .ask button:active { transform: translateY(1px); }
+
+  /* ── Veil: covers the hand-off to /chat.html. Mobile browsers hold the
+     last painted frame while the next document loads, so without this the
+     dark desk sits on screen looking like a stall. ── */
+  .veil {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #efeae2;             /* matches the chat background exactly */
+    opacity: 0; visibility: hidden;
+    transition: opacity 0.45s ease;
+    z-index: 40;
+  }
+  .veil.up { opacity: 1; visibility: visible; }
+  .veil span {
+    font-size: clamp(15px, 4vw, 18px);
+    font-style: italic;
+    color: #7c6444;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .candle, .letter .seal-group { animation: none; }
+    .mote { display: none; }
+    .stage { transition: opacity 0.4s ease; }
+    .stage.parting { transform: none; }
+  }
+</style>
+</head>
+
+<body>
+  <div class="desk"></div>
+  <div class="candle"></div>
+  <div class="candle inner"></div>
+
+  <main class="stage" id="stage">
+    <svg class="letter" viewBox="0 0 300 200" role="img" aria-label="A sealed letter">
+      <defs>
+        <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fbf4e6" />
+          <stop offset="100%" stop-color="#e6d8bf" />
+        </linearGradient>
+        <linearGradient id="flap" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f3e9d4" />
+          <stop offset="100%" stop-color="#d9c8ab" />
+        </linearGradient>
+        <radialGradient id="wax" cx="38%" cy="34%">
+          <stop offset="0%" stop-color="#b8453c" />
+          <stop offset="70%" stop-color="#8f2f2a" />
+          <stop offset="100%" stop-color="#6f231f" />
+        </radialGradient>
+      </defs>
+
+      <!-- envelope body -->
+      <rect x="34" y="44" width="232" height="150" rx="6"
+            fill="url(#paper)" stroke="rgba(122,84,44,0.35)" stroke-width="1.5" />
+      <!-- inner creases -->
+      <path d="M34 44 L150 132 L266 44" fill="none" stroke="rgba(122,84,44,0.28)" stroke-width="1.5" />
+      <path d="M34 194 L134 118" fill="none" stroke="rgba(122,84,44,0.16)" stroke-width="1.5" />
+      <path d="M266 194 L166 118" fill="none" stroke="rgba(122,84,44,0.16)" stroke-width="1.5" />
+      <!-- top flap -->
+      <path d="M34 44 L150 132 L266 44 Z"
+            fill="url(#flap)" stroke="rgba(122,84,44,0.35)" stroke-width="1.5" />
+
+      <!-- wax seal -->
+      <g class="seal-group">
+        <ellipse cx="150" cy="128" rx="22" ry="21" fill="url(#wax)" />
+        <circle cx="150" cy="128" r="16" fill="none" stroke="rgba(255,222,202,0.32)" stroke-width="1.4" />
+        <path d="M150 117 L150 139 M139 126 L161 126"
+              stroke="rgba(255,226,208,0.62)" stroke-width="2.4" stroke-linecap="round" />
+      </g>
+    </svg>
+
+    <p class="eyebrow" id="eyebrow">Written this morning</p>
+    <h1 class="headline">A letter is waiting for you</h1>
+    <p class="subline" id="subline">The seal is still warm. I have not sent it to anyone else.</p>
+
+    <p class="trust">Written today &middot; <b>One letter, one name</b></p>
+
+    <form class="ask" id="ask" autocomplete="off" novalidate>
+      <label for="visitor">Whose name should I write on it?</label>
+      <input id="visitor" type="text" name="visitor_given_name"
+             placeholder="Type your name here" autocomplete="off"
+             autocapitalize="words" spellcheck="false" maxlength="40" />
+      <button type="submit" id="open">Open my letter</button>
+    </form>
+  </main>
+
+  <div class="veil" id="veil"><span id="veilText">Breaking the seal&hellip;</span></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var VARIANT = 'JC-MWFY';
+  var TRACKED = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'utm_id'];
+  var HANDOFF_MS = 2600;
+
+  var stage    = document.getElementById('stage');
+  var form     = document.getElementById('ask');
+  var input    = document.getElementById('visitor');
+  var button   = document.getElementById('open');
+  var eyebrow  = document.getElementById('eyebrow');
+  var subline  = document.getElementById('subline');
+  var veil     = document.getElementById('veil');
+
+  /* ── Dust motes ──────────────────────────────────────────────────
+     Spawned one at a time and removed on completion, so the node count
+     stays flat instead of growing for the whole session. Desktop gets a
+     few more than phones, where they cost more to composite. */
+  var MOTE_CAP = window.matchMedia('(min-width: 768px)').matches ? 22 : 12;
+  var motesAlive = 0;
+  var moteTimer;
+
+  function dropMote() {
+    if (motesAlive >= MOTE_CAP || document.hidden) return;
+    var m = document.createElement('div');
+    m.className = 'mote';
+    var size = 2 + Math.random() * 2.6;
+    m.style.width = m.style.height = size + 'px';
+    m.style.left = (Math.random() * 96) + 'vw';
+    m.style.top = '0';
+    var life = 11 + Math.random() * 9;
+    m.style.animationDuration = life + 's';
+    document.body.appendChild(m);
+    motesAlive++;
+    setTimeout(function () { m.remove(); motesAlive--; }, life * 1000);
+  }
+  moteTimer = setInterval(dropMote, 900);
+  for (var i = 0; i < 4; i++) dropMote();
+
+  /* ── Facebook identifiers ────────────────────────────────────────
+     _fbp is written by the Meta pixel. _fbc has to be built by hand on
+     the first pageview after an ad click, because the pixel only writes
+     it once it has loaded; if we read the cookie too early we get
+     nothing and the click loses attribution. */
+  function readCookie(name) {
+    var hit = document.cookie.match('(?:^|; )' + name.replace(/([.*+?^${}()|[\]\\])/g, '\\$1') + '=([^;]*)');
+    return hit ? decodeURIComponent(hit[1]) : '';
+  }
+
+  function facebookClickId() {
+    var existing = readCookie('_fbc');
+    if (existing) return existing;
+    var clickId = new URLSearchParams(location.search).get('fbclid');
+    return clickId ? 'fb.1.' + Date.now() + '.' + clickId : '';
+  }
+
+  /* Dots are the field separator in _fbp/_fbc, and they survive a query
+     string badly across some in-app browsers. Swap them for a double
+     dash here; chat.html swaps them back. */
+  function shield(value) { return value ? value.replace(/\./g, '--') : ''; }
+
+  /* ── Hand-off ────────────────────────────────────────────────────
+     Navigate to chat.html rather than mounting it in an iframe. An
+     iframe underneath a parent with transform: scale() flickers and
+     fails to paint on iOS Safari, and no amount of translate3d or
+     opacity juggling fixed it. A top level navigation has none of that
+     problem: the veil covers the transition and the chat renders on its
+     own clean document. */
+  function chatUrl(name) {
+    var url = new URL('chat.html', location.href);
+    url.searchParams.set('firstName', name);
+    url.searchParams.set('variant', VARIANT);
+
+    var fbp = shield(readCookie('_fbp'));
+    var fbc = shield(facebookClickId());
+    if (fbp) url.searchParams.set('fbp', fbp);
+    if (fbc) url.searchParams.set('fbc', fbc);
+
+    var landed = new URLSearchParams(location.search);
+    TRACKED.forEach(function (key) {
+      var value = landed.get(key);
+      if (value) url.searchParams.set(key, value);
+    });
+
+    return url.toString();
+  }
+
+  /* ── Submit ──────────────────────────────────────────────────────
+     The button stays enabled and validation runs here, showing the
+     error in the subline. A disabled button gives no reason why, which
+     reads as a broken page to anyone who is not looking carefully. */
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    var name = input.value.trim().replace(/\s+/g, ' ');
+    if (!name) {
+      subline.textContent = 'Tell Me your name first, and I will write it.';
+      input.focus();
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = 'Breaking the seal…';
+    eyebrow.textContent = 'For ' + name;
+    subline.textContent = 'It has your name on it now.';
+
+    try { sessionStorage.setItem('mwfy_first_name', name); } catch (err) { /* private mode */ }
+
+    var destination = chatUrl(name);
+    clearInterval(moteTimer);
+    stage.classList.add('parting');
+
+    /* Raise the veil while the stage is still fading, so it is already
+       painted before the navigation freezes the last frame. */
+    setTimeout(function () { veil.classList.add('up'); }, HANDOFF_MS - 1100);
+    setTimeout(function () { location.href = destination; }, HANDOFF_MS);
+  });
+
+  /* Autofocus is deliberately not set: on phones it opens the keyboard
+     immediately and hides the letter, which is the whole hook. */
+})();
+</script>
+</body>
+</html>
