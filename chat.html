@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>Sua mensagem</title>
+<link rel="icon" type="image/png" href="/favicon.png" />
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #efeae2; }
+  typebot-standard { width: 100%; height: 100vh; display: block; }
+</style>
+</head>
+<body>
+  <typebot-standard></typebot-standard>
+
+  <script type="module">
+    import Typebot from 'https://cdn.jsdelivr.net/npm/@typebot.io/js@0/dist/web.js';
+
+    /* ─── AJUSTE AQUI ───────────────────────────────────────────────
+       TYPEBOT  = o "public id" do seu bot publicado
+                  (Share → aba dele; ou o final da URL pública)
+       API_HOST = https://typebot.io          -> se usa o Typebot cloud
+                  https://seu-dominio-typebot  -> se é self-hosted
+       ──────────────────────────────────────────────────────────── */
+    const TYPEBOT  = 'funil-jesus-digital-clone-mwfy-9xkcmjj';
+    const API_HOST = 'https://typebot.co';
+
+    const params = new URLSearchParams(location.search);
+
+    // desfaz o "--" -> "." aplicado no index.html nos ids do Facebook
+    const restore = (v) => (v ? v.replace(/--/g, '.') : v);
+
+    const carried = {};
+    const put = (k, v) => { if (v) carried[k] = v; };
+
+    put('firstName', params.get('firstName'));
+    put('variant',   params.get('variant'));
+    put('fbp', restore(params.get('fbp')));
+    put('fbc', restore(params.get('fbc')));
+
+    for (const k of ['utm_source','utm_medium','utm_campaign','utm_content','utm_term','utm_id']) {
+      put(k, params.get(k));
+    }
+
+    Typebot.initStandard({
+      typebot: TYPEBOT,
+      apiHost: API_HOST,
+      prefilledVariables: carried,
+    });
+  </script>
+</body>
+</html>
